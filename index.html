@@ -236,6 +236,20 @@ body.adm .top{padding-bottom:0}
 .qty.sm{margin-top:6px}.qty.sm button{width:32px;height:32px;font-size:17px}
 #tcart .sum div{align-items:flex-start}
 #instBox[hidden]{display:none!important}
+
+.wh{font-size:22px;margin:28px 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.wday{border-top:1px solid var(--line);padding:10px 0}
+.wday.hoy .wdh b{color:var(--cel3)}
+.wdh{display:flex;justify-content:space-between;align-items:baseline;width:100%;background:none;border:0;padding:6px 0;text-align:left;min-height:40px;gap:8px}
+.wdh b{font-weight:500;font-size:17px}
+.wrow{display:flex;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--cel3);border-radius:12px;padding:10px 12px;margin:6px 0;align-items:flex-start}
+.wrow .h{font-weight:500;font-size:17px;min-width:52px;white-space:nowrap}
+.wrow .t{flex:1;font-size:15px;line-height:1.35}
+.wrow .t b{font-weight:500}
+.wrow small{display:block;color:var(--mute);font-size:13px}
+
+.soporte{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:6;display:flex;align-items:center;gap:8px;height:52px;padding:0 18px;border-radius:99px;background:#25D366;color:#06210f;font-weight:600;text-decoration:none;box-shadow:0 6px 20px rgb(0 0 0/.25)}
+.soporte[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -423,6 +437,7 @@ body.adm .top{padding-bottom:0}
               <button class="btn small" id="dNueva">+ Agendar este día</button>
               <button class="ghost small" id="dBlock"></button>
             </div>
+            <div id="wList"></div>
           </div>
         </div>
       </div>
@@ -519,6 +534,9 @@ body.adm .top{padding-bottom:0}
         <textarea id="kTr" style="min-height:150px" placeholder="Banco:&#10;Tipo de cuenta:&#10;Número:&#10;RUT:&#10;Nombre:&#10;Correo:"></textarea>
         <div class="row" style="justify-content:flex-start"><button class="btn" id="kSave">Guardar datos</button></div>
         <div class="ok-msg" id="kOk"></div>
+        <h2 style="margin-top:28px">Soporte</h2>
+        <p class="sub">¿Algo no funciona o quieres un cambio en la app? Escríbele a Matías por WhatsApp: +56 9 5195 4852.</p>
+        <div class="row" style="justify-content:flex-start"><a class="btn" href="https://wa.me/56951954852?text=Hola%20Mat%C3%ADas%2C%20necesito%20ayuda%20con%20la%20app%20de%20Secretos%20de%20Belleza" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;text-decoration:none">Escribir a soporte</a></div>
         <h2 style="margin-top:28px">Enlace del panel</h2>
         <p class="sub">Guárdalo en la pantalla de inicio del celular para entrar directo.</p>
         <div class="bank" id="plink"></div>
@@ -541,6 +559,8 @@ body.adm .top{padding-bottom:0}
     <button class="btn" id="next" disabled>Continuar</button>
   </div>
 </div>
+
+<a class="soporte" id="soporte" href="https://wa.me/56951954852?text=Hola%20Mat%C3%ADas%2C%20necesito%20ayuda%20con%20la%20app%20de%20Secretos%20de%20Belleza" target="_blank" rel="noopener" hidden aria-label="Soporte por WhatsApp con Matías"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3z"/></svg><span>Soporte</span></a>
 
 <div class="bar" id="tbar" hidden>
   <div class="in">
@@ -874,7 +894,7 @@ function abrirTab(a) {
   if (a === 'aj') ajustes();
 }
 async function entrarPanel() {
-  $('#alogin').hidden = true; $('#apanel').hidden = false;
+  $('#alogin').hidden = true; $('#apanel').hidden = false; $('#soporte').hidden = $('#v-admin').hidden;
   const d = new Date(); ad.mes = new Date(d.getFullYear(), d.getMonth(), 1);
   try { const c = await adm('admin_config'); SERV = c.servicios; TRANSF = c.transferencia; } catch(e) {}
   abrirTab('agenda');
@@ -921,6 +941,19 @@ function renderDia() {
       ${x.estado !== 'confirmada' ? `<button data-est="confirmada" data-id="${esc(x.id)}">Volver a confirmada</button>` : ''}${x.estado !== 'cancelada' ? `<button class="del" data-est="cancelada" data-id="${esc(x.id)}">Cancelar</button>` : ''}</div>
     </div></div>`).join('') : `<div class="empty">${bloq ? 'Día bloqueado: nadie puede agendar.' : 'Sin horas este día.'}</div>`;
   $('#dBlock').textContent = bloq ? 'Desbloquear día' : 'Bloquear día';
+  renderSemana();
+}
+
+// Resto de la semana (lunes a sábado) debajo del día elegido
+function renderSemana() {
+  const d = parseYmd(ad.fecha), lunes = addDays(ad.fecha, -((d.getDay() + 6) % 7));
+  const dias7 = Array.from({length: 6}, (_, i) => addDays(lunes, i)).filter(f => f !== ad.fecha);
+  const fin = addDays(lunes, 5);
+  $('#wList').innerHTML = `<h3 class="wh">Resto de la semana <span class="mini">${esc(fCorta(lunes))} al ${esc(fCorta(fin))}</span></h3>` + dias7.map(f => {
+    const rs = ad.data.reservas.filter(r => r.fecha === f && ACT.includes(r.estado) && delPro(r)).sort((a,b) => a.ini.localeCompare(b.ini));
+    const bloq = ad.data.bloqueos.includes(f) || !HORARIO[parseYmd(f).getDay()];
+    return `<div class="wday${f === ymd(new Date()) ? ' hoy' : ''}"><button class="wdh" data-f="${f}"><b>${esc(fLarga(f))}</b><span class="mini">${bloq ? 'Cerrado' : rs.length ? rs.length + (rs.length === 1 ? ' hora' : ' horas') : 'Sin horas'}</span></button>
+      ${rs.map(r => `<button class="wrow" data-f="${f}"><span class="h">${esc(r.ini)}</span><span class="t"><b>${esc(r.nombre)}</b> · ${esc(r.servicios)}<small>Con ${esc(corto(r.profesional || ''))}${r.pago === 'pagado' ? ' · Pagado' : /transferencia/.test(r.pago) ? ' · Transferencia por revisar' : ''}</small></span></button>`).join('')}</div>`; }).join('');
 }
 
 /* --- Agendar clienta --- */
@@ -1199,6 +1232,7 @@ function vista(v) {
   if (v === 'tienda') tCargar(); tBar();
   $('#ctabs').hidden = $('#tagline').hidden = v === 'admin';
   $('#gopanel').classList.toggle('on', v === 'admin'); document.body.classList.toggle('adm', v === 'admin');
+  $('#soporte').hidden = v !== 'admin' || $('#apanel').hidden;
   $('#gopanelt').textContent = v === 'admin' ? 'Volver a la app' : 'Panel salón';
   $('#bar').hidden = v !== 'agendar' || st.step === 4;
   if (v === 'admin' && ad.pin) adm('login').then(entrarPanel).catch(() => { ad.pin = ''; });
@@ -1255,6 +1289,9 @@ $('#dList').addEventListener('click', async e => {
   try { if (b.dataset.pago) await adm('admin_pago', {id: b.dataset.id, valor: b.dataset.pago}); else await adm('admin_estado', {id: b.dataset.id, valor: b.dataset.est}); } catch(err) { alertBox(err.message); }
   cargarMes(); });
 const alertBox = m => { $('#dSum').textContent = m; };
+$('#wList').addEventListener('click', e => { const x = e.target.closest('[data-f]'); if (!x) return; ad.fecha = x.dataset.f;
+  const d = parseYmd(ad.fecha); if (d.getMonth() !== ad.mes.getMonth()) { ad.mes = new Date(d.getFullYear(), d.getMonth(), 1); cargarMes(); } else { renderCal(); renderDia(); }
+  $('#dT').scrollIntoView({behavior: 'smooth', block: 'start'}); });
 $('#dBlock').addEventListener('click', async () => { await adm(ad.data.bloqueos.includes(ad.fecha) ? 'desbloquear' : 'bloquear', {fecha: ad.fecha}).catch(err => alertBox(err.message)); cargarMes(); });
 $('#dNueva').addEventListener('click', () => { abrirTab('nueva'); prepNueva({fecha: ad.fecha}); });
 $('#nServ').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; ad.nSel.has(b.dataset.id) ? ad.nSel.delete(b.dataset.id) : ad.nSel.add(b.dataset.id);
@@ -1271,7 +1308,7 @@ $('#cBody').addEventListener('click', e => { const b = e.target.closest('[data-c
 $('#sSave').addEventListener('click', guardarServ);
 $('#kSave').addEventListener('click', async () => { try { await adm('guardar_config', {valores: {transferencia: $('#kTr').value.trim()}}); TRANSF = $('#kTr').value.trim(); $('#kOk').textContent = 'Datos guardados.'; } catch(e) { $('#kOk').textContent = e.message; } });
 $('#pCopy').addEventListener('click', e => copiar($('#plink').textContent, e.currentTarget));
-$('#aSalir').addEventListener('click', () => { ad.pin = ''; try { sessionStorage.removeItem('sdb_pin'); } catch(e) {} $('#apanel').hidden = true; $('#alogin').hidden = false; $('#pin').value = ''; });
+$('#aSalir').addEventListener('click', () => { ad.pin = ''; try { sessionStorage.removeItem('sdb_pin'); } catch(e) {} $('#apanel').hidden = true; $('#alogin').hidden = false; $('#pin').value = ''; $('#soporte').hidden = true; });
 
 /* ---------- Instalar como app ---------- */
 let instEv = null;
