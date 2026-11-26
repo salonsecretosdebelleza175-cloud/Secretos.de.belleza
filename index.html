@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#070707">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Secretos">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Secretos de Belleza · Agenda</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Federo&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
@@ -226,6 +235,7 @@ body.adm .top{padding-bottom:0}
 .qty span{min-width:1.5em;text-align:center;font-weight:500}
 .qty.sm{margin-top:6px}.qty.sm button{width:32px;height:32px;font-size:17px}
 #tcart .sum div{align-items:flex-start}
+#instBox[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -321,6 +331,10 @@ body.adm .top{padding-bottom:0}
       </div>
       <div><b style="font-weight:500">Arturo Prat 175, Illapel</b> · <a href="https://www.google.com/maps/search/?api=1&query=Arturo+Prat+175+Illapel+Chile" target="_blank" rel="noopener">Cómo llegar</a></div>
       <div>Instagram <a href="https://www.instagram.com/salon_secretosdebelleza/" target="_blank" rel="noopener">@salon_secretosdebelleza</a> · Facebook: Secretos de Belleza</div>
+      <div id="instBox" hidden style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px">
+        <button class="btn small" id="instalar">Descargar la app</button><span class="mini">Ten el salón en tu pantalla de inicio.</span>
+        <p class="mini" id="iosTip" hidden style="flex-basis:100%;margin:0">En iPhone: toca el botón <b>Compartir</b> de Safari (el cuadrado con la flecha) y luego <b>“Agregar a inicio”</b>.</p>
+      </div>
     </div>
   </section>
 
@@ -1258,6 +1272,19 @@ $('#sSave').addEventListener('click', guardarServ);
 $('#kSave').addEventListener('click', async () => { try { await adm('guardar_config', {valores: {transferencia: $('#kTr').value.trim()}}); TRANSF = $('#kTr').value.trim(); $('#kOk').textContent = 'Datos guardados.'; } catch(e) { $('#kOk').textContent = e.message; } });
 $('#pCopy').addEventListener('click', e => copiar($('#plink').textContent, e.currentTarget));
 $('#aSalir').addEventListener('click', () => { ad.pin = ''; try { sessionStorage.removeItem('sdb_pin'); } catch(e) {} $('#apanel').hidden = true; $('#alogin').hidden = false; $('#pin').value = ''; });
+
+/* ---------- Instalar como app ---------- */
+let instEv = null;
+const yaInstalada = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); instEv = e; if (!yaInstalada) $('#instBox').hidden = false; });
+addEventListener('appinstalled', () => { $('#instBox').hidden = true; });
+if (!yaInstalada && esIOS) $('#instBox').hidden = false;
+$('#instalar').addEventListener('click', async () => {
+  if (instEv) { instEv.prompt(); try { await instEv.userChoice; } catch(e) {} instEv = null; }
+  else $('#iosTip').hidden = false;
+});
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch(e) {} }
 
 /* ---------- Inicio ---------- */
 $('#tel').value = store.get('sdb_tel') || ''; $('#nombre').value = store.get('sdb_nom') || ''; $('#mtel').value = store.get('sdb_tel') || '';
